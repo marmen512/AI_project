@@ -1,0 +1,54 @@
+"""
+Константи для навчання моделі
+"""
+# Параметри моделі за замовчуванням
+DEFAULT_DIM = 512
+DEFAULT_DEPTH = 4
+DEFAULT_SEQ_LEN = 2048
+DEFAULT_VOCAB_SIZE = 50257  # GPT-2 vocab size
+
+# Параметри навчання за замовчуванням
+DEFAULT_BATCH_SIZE = 4
+DEFAULT_EPOCHS = 5
+DEFAULT_LEARNING_RATE = 1e-4
+DEFAULT_MAX_RECURRENT_STEPS = 12
+DEFAULT_GRADIENT_ACCUMULATION_STEPS = 4
+DEFAULT_WARMUP_STEPS = 1000
+
+# Параметри моделі TRM
+DEFAULT_NUM_REFINEMENT_BLOCKS = 3
+DEFAULT_NUM_LATENT_REFINEMENTS = 6
+DEFAULT_HALT_LOSS_WEIGHT = 1.0
+DEFAULT_HALT_PROB_THRES = 0.5
+
+# Checkpoint параметри
+DEFAULT_CHECKPOINT_INTERVAL = 100
+DEFAULT_CHECKPOINT_DIR = "checkpoints"
+
+# DataLoader параметри
+MAX_NUM_WORKERS = 4
+DEFAULT_CACHE_TOKENS = True
+CACHE_SIZE_LIMIT = 1000  # Максимальний розмір кешу токенів
+
+# Інші
+DEFAULT_TOKENIZER_NAME = "gpt2"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
