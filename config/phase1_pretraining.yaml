@@ -1,0 +1,114 @@
+# ФАЗА 1 - Language Pretraining Configuration
+# Навчання кастомної Transformer моделі з нуля на plain text
+# CPU-only, random initialization, causal language modeling
+
+model:
+  # Small Transformer (15-25M параметрів для CPU)
+  dim: 320          # Embedding dimension (320 для ~20M params)
+  depth: 6          # Number of transformer layers (6 layers для CPU)
+  heads: 8          # Number of attention heads (8 heads для 320 dim)
+  seq_len: 256      # Sequence length (256 для CPU-safe навчання)
+  vocab_size: null  # Автоматично з GPT-2 tokenizer (50257)
+  
+  # КРИТИЧНО: Random initialization (БЕЗ pretrained weights)
+  use_transformer: true
+  transformer_model: "gpt2"           # Тільки архітектура, НЕ weights
+  transformer_pretrained: false       # ОБОВ'ЯЗКОВО false для random init
+  transformer_cache_dir: "models/pretrained"
+  
+  # Рекурсивні налаштування (для TRM архітектури)
+  max_recursion_depth: 8
+  adaptive_recursion: true
+
+training:
+  # ФАЗА 1: Language Pretraining параметри
+  batch_size: 2         # Малий batch для CPU (2-4)
+  max_epochs: 3             # Максимум 3 epochs як вимагається
+  learning_rate: 0.0005   # Вищий LR для pretraining з нуля (5e-4)
+  
+  # CPU оптимізація
+  gradient_accumulation_steps: 8  # Ефективний batch_size = 2 * 8 = 16
+  
+  # Checkpoint налаштування
+  checkpoint_dir: checkpoints/phase1
+  checkpoint_interval: 500        # Частіше для довгого pretraining
+  keep_checkpoints: 3
+  auto_resume: true
+  
+  # Безпека від відключення електроененергії
+  save_every_n_steps: 300         # Зберігати кожні 300 батчів (~3 хвилини)
+  emergency_save_on_interrupt: true  # Зберігати при Ctrl+C
+  
+  # Моніторинг
+  enable_monitoring: true
+  monitoring_interval: 50
+  log_dir: logs/phase1
+  
+  # Оптимізатор
+  optimizer: adamw
+  weight_decay: 0.1     # Менший weight decay для pretraining
+  warmup_steps: 1000    # Warmup для стабільності
+  warmup_ratio: 0.05
+  # Advanced Optimizations
+  fp16: false
+  gradient_checkpointing: true
+  # Curriculum Learning
+  seq_len_schedule:
+    - { epoch: 1, seq_len: 64 }
+    - { epoch: 2, seq_len: 128 }
+    - { epoch: 3, seq_len: 256 }
+  
+  # ФАЗА 1 специфічні налаштування
+  objective: "causal_lm"  # Causal language modeling
+  thinking_cost_weight: 0.0  # Вимкнути thinking cost для pretraining
+
+dataset:
+  # ФАЗА 1: Plain text corpus
+  path: datasets/pretrain_text.txt
+  type: plain_text      # НЕ trm, НЕ instruction format
+  format: text          # Plain text format
+  
+  # Налаштування для plain text
+  cache_size: 500
+  validate_format: false  # Plain text не потребує валідації JSON
+  
+  # Tokenizer налаштування
+  tokenizer_name: "gpt2"  # GPT-2 tokenizer як вимагається
+  add_special_tokens: true
+  
+  # ЗАБОРОНЕНО: instruction datasets в ФАЗІ 1
+  additional_datasets: []  # Порожній список!
+
+cpu_optimization:
+  # Ryzen 5 3600 оптимізація
+  num_threads: 6
+  num_interop_threads: 2
+  num_workers: 2        # Для DataLoader
+  numa_enabled: false
+  
+  # Пам'ять оптимізація
+  pin_memory: false     # Для CPU
+  prefetch_factor: 2
+
+# ЗАБОРОНЕНО в ФАЗІ 1
+rag:
+  enabled: false
+
+# Моніторинг thresholds для CPU
+monitoring:
+  cpu_warning_threshold: 95.0
+  memory_warning_threshold: 85.0  # Нижче для довгого pretraining
+  gpu_memory_warning_threshold: 90.0
+  slow_batch_threshold: 120.0     # Довші батчі для pretraining
+
+# WandB (опціонально)
+wandb:
+  enabled: false
+  project: trm-phase1-pretraining
+  entity: null
+  run_name: "phase1_language_pretraining"
+  tags: ["phase1", "pretraining", "causal_lm", "cpu"]
+
+# Curriculum learning (опціонально для ФАЗИ 1)
+curriculum:
+  enabled: false  # Простіше без curriculum для pretraining

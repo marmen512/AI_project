@@ -1,0 +1,146 @@
+# ФАЗА 2 - Instruction Tuning Configuration
+# Навчання моделі після ФАЗИ 1 на instruction datasets
+# ТІЛЬКИ ПІСЛЯ завершення language pretraining!
+
+model:
+  # Використовувати ту ж архітектуру що і в ФАЗІ 1
+  dim: 320          # МАЄ співпадати з ФАЗОЮ 1
+  depth: 6          # МАЄ співпадати з ФАЗОЮ 1
+  seq_len: 256      # Можна збільшити до 512 якщо CPU дозволяє
+  vocab_size: null  # Той же GPT-2 tokenizer
+  
+  # КРИТИЧНО: Завантажити weights з ФАЗИ 1
+  use_transformer: true
+  transformer_model: "gpt2"           # Та ж архітектура
+  transformer_pretrained: false       # НЕ HuggingFace weights
+  transformer_cache_dir: "models/pretrained"
+  
+  # Шлях до моделі з ФАЗИ 1 (буде вказано при запуску)
+  pretrained_model_path: null  # Заповнити при запуску: checkpoints/phase1/best_model.pt
+  
+  # Рекурсивні налаштування
+  max_recursion_depth: 8
+  adaptive_recursion: true
+
+training:
+  # Phase 2 v2: Safe instruction tuning
+  batch_size: 4
+  epochs: 1
+  learning_rate: 5e-5
+  gradient_accumulation_steps: 8
+  max_grad_norm: 1.0
+  sanity_interval: 100
+
+  # Optimizer
+  optimizer: adamw
+  weight_decay: 0.01
+  warmup_steps: 50
+
+  # Checkpointing
+  checkpoint_dir: checkpoints/phase2
+  checkpoint_interval: 200
+  save_every_steps: 50
+  keep_checkpoints: 5
+  auto_resume: true
+
+  # Monitoring
+  enable_monitoring: true
+  monitoring_interval: 25
+  log_dir: logs/phase2
+
+  # Loss guard (EMA)
+  loss_guard_enabled: true
+  loss_guard_ema_beta: 0.98
+  loss_guard_warmup_steps: 200
+  loss_guard_threshold_ratio: 0.40
+  loss_guard_patience_steps: 250
+
+dataset:
+  # ФАЗА 2: Instruction datasets (ТІЛЬКИ після ФАЗИ 1!)
+  path: datasets/alpaca.json  # Основний instruction dataset
+  type: trm               # TRM instruction format
+  format: instruction     # Instruction/input/output format
+  
+  # Налаштування
+  cache_size: 1000
+  validate_format: true   # Валідувати instruction format
+  
+  # Tokenizer (той же що в ФАЗІ 1)
+  tokenizer_name: "gpt2"
+  add_special_tokens: true
+  
+  # Дозволені instruction datasets для ФАЗИ 2
+  additional_datasets:
+    - datasets/squad.json           # SQuAD 1.1
+    - datasets/squad_v2.json        # SQuAD v2
+    - datasets/dailydialog_minimal.json  # DailyDialog
+    # НЕ simple_wiki.json - він вже використаний в ФАЗІ 1 як plain text
+  
+  # Балансування datasets
+  dataset_weights:
+    alpaca: 0.4           # 40% Alpaca
+    squad: 0.25           # 25% SQuAD 1.1
+    squad_v2: 0.25        # 25% SQuAD v2
+    dailydialog: 0.1      # 10% DailyDialog
+
+cpu_optimization:
+  # Ryzen 5 3600 оптимізація
+  num_threads: 6
+  num_interop_threads: 2
+  num_workers: 2
+  numa_enabled: false
+  
+  # Пам'ять оптимізація
+  pin_memory: false
+  prefetch_factor: 2
+
+# ЗАБОРОНЕНО в ФАЗІ 2 (поки що)
+rag:
+  enabled: false  # RAG додається ПІСЛЯ навчання, не під час
+
+# Моніторинг thresholds
+monitoring:
+  cpu_warning_threshold: 95.0
+  memory_warning_threshold: 90.0
+  gpu_memory_warning_threshold: 90.0
+  slow_batch_threshold: 60.0      # Коротші батчі для instruction tuning
+
+# WandB (опціонально)
+wandb:
+  enabled: false
+  project: trm-phase2-instruction-tuning
+  entity: null
+  run_name: "phase2_instruction_tuning"
+  tags: ["phase2", "instruction_tuning", "fine_tuning", "cpu"]
+
+# Curriculum learning для instruction tuning
+curriculum:
+  enabled: true
+  stages:
+    - name: "simple_instructions"
+      seq_len: 128
+      batch_size: 6
+      epochs: 1
+      datasets: ["dailydialog"]  # Почати з простих діалогів
+    - name: "qa_tasks"
+      seq_len: 256
+      batch_size: 4
+      epochs: 1
+      datasets: ["squad", "squad_v2"]  # Потім Q&A
+    - name: "complex_instructions"
+      seq_len: 256
+      batch_size: 4
+      epochs: 1
+      datasets: ["alpaca"]  # Нарешті складні інструкції
+
+# Валідація якості
+validation:
+  enabled: true
+  split_ratio: 0.1      # 10% для валідації
+  metrics: ["loss", "perplexity", "instruction_following_accuracy"]
+  
+# Зупинка при погіршенні якості
+quality_control:
+  enabled: true
+  max_loss_increase: 0.5    # Зупинити якщо loss зростає більше ніж на 0.5
+  min_improvement_epochs: 2  # Зупинити якщо немає покращення 2 epochs

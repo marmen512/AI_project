@@ -1,0 +1,90 @@
+# TRM Training Configuration
+# Використовується runtime.bootstrap для навчання
+
+model:
+  dim: 768  # GPT-2 small розмір (буде оновлено автоматично якщо use_transformer=true)
+  depth: 12  # GPT-2 small depth (буде оновлено автоматично якщо use_transformer=true)
+  seq_len: 1024  # Збільшено для GPT-2 (максимум 1024 для GPT-2 small)
+  vocab_size: null  # Автоматично з tokenizer
+  max_recursion_depth: 20
+  adaptive_recursion: true  # Увімкнути adaptive recursion gate (рекомендовано для Transformer)
+  
+  # Transformer налаштування
+  use_transformer: true  # Використати Transformer замість MLPMixer
+  transformer_model: "gpt2"  # "gpt2", "gpt2-medium", "gpt2-large", "gpt2-xl" (рекомендовано "gpt2" для CPU)
+  transformer_pretrained: true  # Завантажити готовий GPT-2 (автоматично при першому використанні)
+  transformer_cache_dir: "models/pretrained"  # Де зберігати завантажені моделі
+
+training:
+  batch_size: 4
+  epochs: 10
+  learning_rate: 1e-4
+  max_recurrent_steps: 12
+  halt_prob_thres: 0.5
+  checkpoint_dir: checkpoints
+  checkpoint_interval: 100
+  keep_checkpoints: 5
+  auto_resume: false
+  enable_monitoring: true
+  monitoring_interval: 10
+  log_dir: logs
+  optimizer: adamw  # "adamw" або "muon"
+  weight_decay: 1.0
+  warmup_steps: 2000
+  gradient_accumulation_steps: 4
+  thinking_cost_weight: 0.01  # Вага thinking cost в loss (для оптимізації мислення)
+
+curriculum:
+  enabled: true
+  stages:
+    - name: "stage_1"
+      seq_len: 128
+      dim: 256
+      batch: 4
+      epochs: 2
+    - name: "stage_2"
+      seq_len: 256
+      dim: 256
+      batch: 4
+      epochs: 3
+
+dataset:
+  path: datasets/alpaca.json  # Основний датасет для навчання
+  type: trm  # "trm", "rag", "mixer", "puzzle"
+  cache_size: 1000
+  validate_format: true
+  # Додаткові датасети (будуть завантажені автоматично)
+  additional_datasets:
+    - datasets/squad.json
+    - datasets/squad_v2.json
+    - datasets/simple_wiki.json
+    - datasets/dailydialog_minimal.json
+
+cpu_optimization:
+  num_threads: 6  # Ryzen 5 3600 = 6 cores
+  num_interop_threads: 2
+  num_workers: 0  # для CPU
+  numa_enabled: false  # для Linux NUMA binding
+
+# RAG configuration (якщо використовується)
+rag:
+  enabled: false
+  backend: memory  # "memory" або "faiss"
+  model_name: "all-MiniLM-L6-v2"  # Модель для embeddings
+  k: 5  # Кількість контекстів для retrieval
+
+# Monitoring thresholds
+monitoring:
+  cpu_warning_threshold: 95.0
+  memory_warning_threshold: 90.0
+  gpu_memory_warning_threshold: 90.0
+  slow_batch_threshold: 300.0
+
+# WandB configuration (опціонально)
+wandb:
+  enabled: false
+  project: trm-training
+  entity: null
+  run_name: null
+
+
