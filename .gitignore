@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+venv-*/
+.env
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Training Outputs
+checkpoints/
+logs/
+cache/
+*.log
+*.ckpt
+*.pt
+
+# Dataset files (if large)
+# datasets/*.txt
+
+# System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+temp/
+tmp/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# HuggingFace
+models/pretrained/
+.cache/
+.huggingface/
+
+# Zip files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Large model files
+*.bin
+*.safetensors
+*.pth
+
+# Monitoring
+.monitoring/
+*.pid
+
+# Export
+export/
+gguf/
+
+# Colab
+/content/drive/
+/sample_data/
+
+# OS generated files
+Thumbs.db
+Desktop.ini

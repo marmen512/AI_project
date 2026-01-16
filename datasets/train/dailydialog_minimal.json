@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "name": "dailydialog_minimal",
+    "type": "dialog",
+    "source": "huggingface",
+    "size": 4,
+    "description": "Converted from HuggingFace dataset"
+  },
+  "data": [
+    {
+      "instruction": "Hello",
+      "input": "",
+      "output": "Hi there! How can I help you?"
+    },
+    {
+      "instruction": "How are you?",
+      "input": "",
+      "output": "I'm doing well, thank you for asking!"
+    },
+    {
+      "instruction": "What's your name?",
+      "input": "",
+      "output": "I'm an AI assistant here to help you."
+    },
+    {
+      "instruction": "Goodbye",
+      "input": "",
+      "output": "Goodbye! Have a great day!"
+    }
+  ]
+}
