@@ -16,6 +16,8 @@ env/
 *.swo
 
 # Training Outputs
+# Allow checkpoints README
+!checkpoints/README.md
 checkpoints/
 logs/
 cache/
