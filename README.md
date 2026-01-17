@@ -692,3 +692,6 @@ python scripts/train_model.py --disable-recursion-logging
 
 **Останнє оновлення:** 18 грудня 2025
 # AI_project
+
+## ✅ GitHub sanity check
+Commit from mobile Debian terminal (Pixel 7)
