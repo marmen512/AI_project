@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   sanity:
@@ -33,23 +34,20 @@ jobs:
           import torch
           import transformers
           import datasets
-          print("Torch version:", torch.__version__)
-          print("Transformers version:", transformers.__version__)
-          print("Datasets version:", datasets.__version__)
-          print("CI sanity check PASSED")
+          print("Torch:", torch.__version__)
+          print("Transformers:", transformers.__version__)
+          print("Datasets:", datasets.__version__)
           EOF2
-- name: Smoke test project imports
+
+      - name: Smoke test project code
         run: |
-          python - << 'EOF'
-          import sys
+          python - << 'EOF3'
+          import sys, os
           sys.path.append(".")
 
           import core
           print("core OK")
 
-          # якщо scripts не пакет — просто перевіримо, що каталог існує
-          import os
           assert os.path.isdir("scripts")
           print("scripts dir OK")
-          EOF
-
+          EOF3
