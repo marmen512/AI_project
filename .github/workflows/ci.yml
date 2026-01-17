@@ -52,6 +52,6 @@ jobs:
           print("scripts dir OK")
           EOF3
 
-- name: CLI help smoke test
+      - name: CLI help smoke test
         run: |
           python main.py --help
