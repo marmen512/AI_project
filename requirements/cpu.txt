@@ -1,0 +1,3 @@
+-r base.txt
+# CPU-only PyTorch
+torch==2.2.2

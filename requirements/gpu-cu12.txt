@@ -1,0 +1,5 @@
+-r base.txt
+# PyTorch CUDA 12
+torch==2.2.2
+triton==2.2.0
+
