@@ -38,3 +38,18 @@ jobs:
           print("Datasets version:", datasets.__version__)
           print("CI sanity check PASSED")
           EOF2
+- name: Smoke test project imports
+        run: |
+          python - << 'EOF'
+          import sys
+          sys.path.append(".")
+
+          import core
+          print("core OK")
+
+          # якщо scripts не пакет — просто перевіримо, що каталог існує
+          import os
+          assert os.path.isdir("scripts")
+          print("scripts dir OK")
+          EOF
+
