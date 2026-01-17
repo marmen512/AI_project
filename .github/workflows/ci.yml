@@ -51,3 +51,6 @@ jobs:
           assert os.path.isdir("scripts")
           print("scripts dir OK")
           EOF3
+- name: CLI help smoke test
+        run: |
+          python main.py --help
